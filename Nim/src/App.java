@@ -1,3 +1,4 @@
+import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -27,15 +28,45 @@ class Game {
 	}
 
 	public void showPiles() {
-
-		System.out.println("\nA: " + pileA + "\tB: " + pileB + "\tC: " + pileC);
+		
+		int decount = 5;
+		
+		System.out.print("\n");
+		
+		for (int i = 0; i < 5; i++) {
+			
+			StringBuilder line = new StringBuilder("");
+			
+			if (pileA >= decount) {
+				line.append("\t*");
+			} else {
+				line.append("\t ");
+			}
+			if (pileB >= decount) {
+				line.append(" *");
+			} else {
+				line.append("  ");
+			}
+			if (pileC >= decount) {
+				line.append(" *");
+			} else {
+				line.append("  ");
+			}
+			
+			if (line.toString().contains("*")) {
+				System.out.println(line.toString());
+			}			
+			decount--;
+		}
+		System.out.println("\tA B C");
 
 	}
 
 	public boolean checkWinner() {
 
-		if (pileA+pileB+pileC == 0) {
-			System.out.println("\n" + lastP + " foi o último a jogar, portanto PERDEU!");
+		if (pileA+pileB+pileC == 1) {
+			showPiles();
+			System.out.println("\n" + lastP + " ganhou o jogo!");
 			return true;
 		}
 		return false;
@@ -65,6 +96,62 @@ class Game {
 
 		lastP = p;
 	}
+	
+	public boolean valueIsValid(char pile, int value) {
+		
+		int currentValue = 0;
+		
+		switch (pile) {
+		case 'A':
+
+			currentValue = pileA;
+			break;
+
+		case 'B':
+
+			currentValue = pileB;
+			break;
+
+		case 'C':
+
+			currentValue = pileC;
+			break;
+
+		default:
+			break;
+		}
+		
+		return (value <= currentValue);
+		
+	}
+	
+	public boolean pileIsEmpty(char pile) {
+		
+		int currentValue = 0;
+		
+		switch (pile) {
+		case 'A':
+			
+			currentValue = pileA;
+			break;
+
+		case 'B':
+
+			currentValue = pileB;
+			break;
+
+		case 'C':
+
+			currentValue = pileC;
+			break;
+
+		default:
+			break;
+		}
+		
+		return (currentValue == 0);
+		
+	}
 
 }
 
@@ -76,9 +163,9 @@ public class App {
 		Scanner scan = new Scanner(System.in);
 		String p1;
 		String p2;
-    String player = "";
+		String player = "";
 		int value;
-		char pile;
+		char pile = ' ';
 
 		System.out.print("Jogador 1, informe seu nome: ");
 		p1 = scan.nextLine();
@@ -90,18 +177,56 @@ public class App {
 
 		while (!game.checkWinner()) {
 
-      game.showPiles();
+			game.showPiles();
 
-      if (player == p1) {
-        player = p2;
-      } else {
-        player = p1;
-      }
+			if (player == p1) {
+				player = p2;
+			} else {
+				player = p1;
+			}
 
 			System.out.print("\n" + player + ", escolha uma pilha: ");
-			pile = scan.next(".").charAt(0);
+			while (true) {
+				pile = ' ';
+				try {
+
+					pile = Character.toUpperCase(scan.next(".").charAt(0));
+
+					if (pile == 'A' || pile == 'B' || pile == 'C') {
+						if (!game.pileIsEmpty(pile)) {
+							break;	
+						} else {
+							System.out.print("Pilha " + pile + " está vazia. Escolha novamente: ");
+						}
+					} else {
+						System.out.print("Pilha " + pile + " não existe. Digite novamente: ");	
+					}
+
+				} catch (InputMismatchException e) {
+					System.out.print("Informe apenas a letra da pilha. Digite novamente: ");
+					scan.next();
+				}
+			};
+			
 			System.out.print("Quanto quer remover da pilha " + pile + ": ");
-			value = scan.nextInt();
+			while (true) {
+				value = 0;
+				try {
+
+					value = scan.nextInt();					
+					
+					if (value > 0 && game.valueIsValid(pile, value)) {
+						break;
+					} else {
+						System.out.print("Valor inválido. Digite novamente: ");	
+					}
+
+				} catch (InputMismatchException e) {
+					System.out.print("Informe um múmero inteiro. Digite novamente: ");
+					scan.next();
+				}
+			};
+
 			game.makeMove(player, pile, value);
 
 		}
